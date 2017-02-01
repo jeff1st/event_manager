@@ -3,9 +3,10 @@ require 'date'
 
 def clean_phones(phone)
   phone = phone.gsub(/[^0-9]/, '')
-  return "bad phone_number" if phone.length > 11 || phone.length < 10
-  return "bad phone_number" if phone.length == 11 && phone[0] != "1"
-  return phone[1..10] if phone.length == 11 && phone[0] == "1"
+  return "bad phone_number" unless [10, 11].include?(phone.length)
+  if phone.length == 11
+    phone[0] == "1" ? (return phone[1..10]) : (return "bad phone_number")
+  end
   return phone
 end
 
@@ -21,11 +22,8 @@ def datetime_mgmt(datetime)
   return comprehensive_date
 end
 
-def fill_hours(datetime, hours)
+def fill_hours_days(datetime, hours, days)
   hours[datetime.hour.to_s] += 1
-end
-
-def fill_days(datetime, days)
   days[datetime.wday] += 1
 end
 
@@ -57,11 +55,11 @@ handler.each do |line|
   next if line[:first_line]
   phones = clean_phones(line[:homephone])
   datetime = datetime_mgmt(clean_date(line[:regdate]))
-  fill_hours(datetime, hours)
-  fill_days(datetime, days)
+  fill_hours_days(datetime, hours, days)
 end
 
 prefered_hour = find_prefered_hour(hours)
 prefered_day = find_prefered_day(days)
+
 puts prefered_hour
 puts named_day[prefered_day]
